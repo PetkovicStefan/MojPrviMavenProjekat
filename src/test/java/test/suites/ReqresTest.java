@@ -3,17 +3,26 @@ package test.suites;
 import calls.ReqresAPI;
 import data.models.reqres.CommonUserRequest;
 import data.models.reqres.CreateUserResponse;
+import data.provider.ReqresProvider;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import test.asserts.ReqresAssert;
 import test.common.TestBase;
 
 public class ReqresTest extends TestBase {
 
+    CommonUserRequest commonUserRequest;
+    String idOfCreatedUser;
+
+    @BeforeMethod
+    public void prepareTestData() {
+        commonUserRequest = ReqresProvider.prepareUserRequest();
+        idOfCreatedUser = ReqresAPI.createUser(commonUserRequest).getId();
+    }
+
     @Test
     public void verifyCreatingUser() {
-        CommonUserRequest commonUserRequest = new CommonUserRequest("Stefan", "QA");
-
         CreateUserResponse createUserResponse = ReqresAPI.createUser(commonUserRequest);
 
         ReqresAssert reqresAssert = new ReqresAssert();
@@ -22,11 +31,7 @@ public class ReqresTest extends TestBase {
 
     @Test
     public void verifyDeleteUser() {
-        CommonUserRequest commonUserRequest = new CommonUserRequest("Stefan", "QA");
-
-        CreateUserResponse createUserResponse = ReqresAPI.createUser(commonUserRequest);
-
-        ReqresAPI.deleteUser(createUserResponse.getId());
-        Assert.assertFalse(ReqresAssert.isUserCreated(createUserResponse.getId()), "User is not deleted");
+        ReqresAPI.deleteUser(idOfCreatedUser);
+        Assert.assertFalse(ReqresAssert.isUserExist(idOfCreatedUser), "User is not deleted");
     }
 }
